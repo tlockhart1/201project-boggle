@@ -1,0 +1,15 @@
+#include "rbt.h"
+#include <stdio.h>
+#include <stdlib.h>
+
+struct dictionary {
+	RBT *tree;
+};
+
+static compareWords(void *, void *);
+
+extern DICTIONARY *newDictionary(FILE *doc){
+	DICTIONARY *d = malloc(sizeof(DICTIONARY));
+	d->tree = newRBT(compareWords);
+	return d;
+}
