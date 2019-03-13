@@ -6,7 +6,7 @@ struct dictionary {
 	RBT *tree;
 };
 
-static compareWords(void *, void *);
+static compareWords(char *, char *);
 static loadDICT(FILE *doc, RBT *d);
 
 extern DICT *newDictionary(FILE *doc){
@@ -15,4 +15,6 @@ extern DICT *newDictionary(FILE *doc){
 	return d;
 }
 
-
+static compareWords(char *a, char *b){
+	return strcmp(a, b);
+}

@@ -7,9 +7,12 @@ struct dictionary {
 };
 
 static compareWords(void *, void *);
+static loadDICT(FILE *doc, RBT *d);
 
-extern DICTIONARY *newDictionary(FILE *doc){
-	DICTIONARY *d = malloc(sizeof(DICTIONARY));
+extern DICT *newDictionary(FILE *doc){
+	DICT *d = malloc(sizeof(DICT));
 	d->tree = newRBT(compareWords);
 	return d;
 }
+
+
