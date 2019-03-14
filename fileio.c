@@ -2,7 +2,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 
-static reallocateString(char *, int);
+static char *reallocateString(char *, size_t);
 
 extern char *getToken(FILE *fp){
 	char ch;
@@ -12,8 +12,10 @@ extern char *getToken(FILE *fp){
 
 	ch = fgetc(fp);
 	if(ch == EOF) return NULL;
-
+	int k = 0;
 	while(!isspace(ch)){
+		//printf("%d - ch count\n", k);
+		k++;
 		if(ch == EOF) break;
 		if(index > size - 2){
 			size *= 2;
@@ -26,13 +28,14 @@ extern char *getToken(FILE *fp){
 	ungetc(ch, fp);
 	string[index] = '\0';
 	if(index == 0){
+		printf("wtf\n");
 		free(string);
 		return NULL;
 	}
 	return string;
 }
 
-static reallocateString(char *string, size_t size){		
+static char *reallocateString(char *string, size_t size){		
 	char *newstring;
 
 	newstring = realloc(string, size);

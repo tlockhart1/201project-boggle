@@ -1,5 +1,7 @@
 #include <ncurses.h>
 #include "da.h"
+#include "dictionary.h"
+#include <stdio.h>
 
 
 WINDOW *create_newwin(int height, int width, int starty, int startx, char fill);
@@ -7,6 +9,9 @@ void destroy_win(WINDOW *local_win);
 
 int main()
 {
+	FILE *doc = fopen("words_alpha.txt", "r");
+	DICT *d = newDictionary(doc);
+	printf("%d\n", sizeDICT(d));
 	DA *grid = newDA();
 	int sizew = 20;
 	int sizeh = 10;
