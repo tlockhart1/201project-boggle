@@ -12,14 +12,7 @@ extern char *getToken(FILE *fp){
 
 	ch = fgetc(fp);
 	if(ch == EOF) return NULL;
-<<<<<<< HEAD
 	while(!isspace(ch)){
-=======
-	int k = 0;
-	while(!isspace(ch)){
-		//printf("%d - ch count\n", k);
-		k++;
->>>>>>> tokenreader
 		if(ch == EOF) break;
 		if(index > size - 2){
 			size *= 2;

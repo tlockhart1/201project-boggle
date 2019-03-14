@@ -10,13 +10,8 @@ struct dictionary {
 	RBT *tree;
 };
 
-<<<<<<< HEAD
-static compareWords(void *, void *);
-static loadDICT(FILE *doc, RBT *d);
-=======
 static int compareWords(void *, void *);
 static void loadDICT(DICT *, FILE *);
->>>>>>> tokenreader
 
 extern DICT *newDictionary(FILE *doc){
 	DICT *d = malloc(sizeof(DICT));
@@ -25,9 +20,6 @@ extern DICT *newDictionary(FILE *doc){
 	return d;
 }
 
-<<<<<<< HEAD
-
-=======
 extern int insertDICTword(DICT *d, void *data){
 	if(insertRBT(d->tree, data)) return 1;
 	return 0;
@@ -50,7 +42,11 @@ static int compareWords(void *a, void *b){
 }
 
 static void loadDICT(DICT *d, FILE *doc){
+<<<<<<< HEAD
+	char *string = NULL; 
+=======
 	char *string = NULL; //getToken(doc);
+>>>>>>> tokenreader
 	char ch;
 	//int k = 0;
 
@@ -73,7 +69,6 @@ static void loadDICT(DICT *d, FILE *doc){
 		string = NULL;
 		ch = fgetc(doc);
 		ch = fgetc(doc);
-		k++;
+		//k++;
 	}
 }
->>>>>>> tokenreader
