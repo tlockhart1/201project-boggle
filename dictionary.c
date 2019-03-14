@@ -42,7 +42,11 @@ static int compareWords(void *a, void *b){
 }
 
 static void loadDICT(DICT *d, FILE *doc){
+<<<<<<< HEAD
 	char *string = NULL; 
+=======
+	char *string = NULL; //getToken(doc);
+>>>>>>> tokenreader
 	char ch;
 	//int k = 0;
 
