@@ -28,4 +28,4 @@ dictionary.o: dictionary.c dictionary.h
 fileio.o: fileio.c fileio.h
 	$(CC) $(CFLAGS) -c fileio.c
 clean: 
-	$(RM) *.exe *.o	main
+	$(RM) *.exe *.o	main *~
