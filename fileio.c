@@ -23,6 +23,10 @@ extern char *getToken(FILE *fp){
 	}
 
 	ungetc(ch, fp);
+
+	if (index > 0)              //there is something in the buffer
+        	clearerr(fp);           //so force the read to be good
+
 	string[index] = '\0';
 	if(index == 0){
 		printf("wtf\n");
