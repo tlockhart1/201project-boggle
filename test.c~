@@ -112,7 +112,7 @@ int main()
 
 int start_menu(){
 	const char *choices [3] = {"Person vs Person Start", "Person vs Computer Start", "Player Logs"};
-	WINDOW *menu = create_menu(10, 50, LINES/2-4, COLS/2-10);
+	WINDOW *menu = create_menu(10, 20, LINES/2-4, COLS/2-10);
 	int choice;
 	int highlight = 0;
 	cbreak();
