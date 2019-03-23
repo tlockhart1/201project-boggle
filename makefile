@@ -7,6 +7,10 @@ test: taco
 	./test 
 valgrind: taco 
 	valgrind --leak-check=full ./test
+taco1: testgrid.o da.o grid.o -lncurses -lm
+	$(CC) $(CFLAGS) testgrid.o da.o grid.o -o testgrid -lncurses -lm
+test1: taco1
+	./testgrid
 test.o: test.c da.h rbt.h dictionary.h fileio.h
 	$(CC) $(CFLAGS) -c test.c
 da.o: da.c da.h
@@ -27,5 +31,9 @@ dictionary.o: dictionary.c dictionary.h
 	$(CC) $(CFLAGS) -c dictionary.c
 fileio.o: fileio.c fileio.h
 	$(CC) $(CFLAGS) -c fileio.c
+testgrid.o: testgrid.c
+	$(CC) $(CFLAGS) -c testgrid.c
+grid.o: grid.c grid.h
+	$(CC) $(CFLAGS) -c grid.c
 clean: 
 	$(RM) *.exe *.o	main *~
