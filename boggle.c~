@@ -22,16 +22,9 @@ extern BOG *newBOGG(void (*d)(void *, FILE *), void (*f)(void *), int seed, int 
 	return b;
 }
 
-extern char getBOGGchar(BOGG *b, int r, int c){    	//make it so the characters in the GRID are unalterable
+extern char getBOGGchar(BOGG *b, int r, int c){
 	char *ptr = (char*)getGRIDcell(b->guts, r, c);
-	if(ptr)
-		return ptr[0];
-	else {
-		printf("ptr was NULL - getBOGGchar");
-		return 'F';
-	}
+	return ptr[0];
 }
-
-extern 
 
 
