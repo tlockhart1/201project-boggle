@@ -46,7 +46,7 @@ extern int getGRIDcols(GRID *this_grid){
 	return this_grid->cols;	
 }
 
-void printGRID(GRID *this_grid, FILE *where){
+extern void printGRID(GRID *this_grid, FILE *where){
 	for (int i = 0; i < this_grid->rows; i++){
 		for(int j = 0; j < this_grid->cols; j++){
 			this_grid->display(getDA(getDA(this_grid->guts, i), j), where);
@@ -54,3 +54,14 @@ void printGRID(GRID *this_grid, FILE *where){
 		fprintf(where, "\n");
 	}
 }
+
+extern void freeGRID(void *this_grid){
+	GRID *a = (GRID*)this_grid;
+	for (int i = 0; i < a->rows; i++){
+		freeDA(getDA(a->guts, i));	
+	}
+	freeDA(a->guts);
+	free(a);
+}
+
+

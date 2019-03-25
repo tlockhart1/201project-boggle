@@ -10,4 +10,5 @@ extern void *insertGRIDcell(GRID *, int r, int c);
 extern void fillGRIDrow(GRID *, void *, int );
 extern int getGRIDrows(GRID *);
 extern int getGRIDcols(GRID *);
+extern void freeGRID(void *);
 
