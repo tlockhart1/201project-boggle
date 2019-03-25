@@ -1,0 +1,16 @@
+#include <stdlib.h>
+#include <stdio.h>
+
+struct boggle{
+	GRID *guts;
+	PLAYR *player1;		//always human
+	PLAYR *player2;		//human or ai(lul) 
+
+}
+
+extern BOG *newBOGG(void (*d)(void *, FILE *), void (*f)(void *), int seed, int r, int c){
+	BOG *b = (BOGG*) malloc(sizeof(BOGG));	
+	b->guts = newGRID(d, 
+
+	return b;
+}

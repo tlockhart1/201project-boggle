@@ -15,9 +15,10 @@ int main(){
 	}
 
 	printGRID(check, stdout);
-	// i can access, but NOT change the characters in this string
+
 	char *p = "will this break";
 
+	p[0] = 't';
 
 	return 0;
 }
