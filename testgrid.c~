@@ -51,7 +51,7 @@ int main(){
 
 	freeGDIE(g);
 
-	BOGG *killme = newBOGG(1012, 4, 4);
+	BOGG *killme = newBOGG(10102, 4, 4);
 	displayBOGG(killme, stdout);
 
 	return 0;

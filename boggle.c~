@@ -89,22 +89,22 @@ static void populateDice(BOGG *b){
 		setGDIEseed(die, b->seed);
 		insertDAback(b->dice, die);
 	}
-	setGDIEfaces(getDA(b->dice, 0), (void**)A, 6);
-	setGDIEfaces(getDA(b->dice, 1), (void**)B, 6);
-	setGDIEfaces(getDA(b->dice, 2), (void**)C, 6);
-	setGDIEfaces(getDA(b->dice, 3), (void**)D, 6);
-	setGDIEfaces(getDA(b->dice, 4), (void**)E, 6);
-	setGDIEfaces(getDA(b->dice, 5), (void**)F, 6);
-	setGDIEfaces(getDA(b->dice, 6),(void**)G, 6);
-	setGDIEfaces(getDA(b->dice, 7), (void**)H, 6);
-	setGDIEfaces(getDA(b->dice, 8), (void**)I, 6);
-	setGDIEfaces(getDA(b->dice, 9), (void**)J, 6);
-	setGDIEfaces(getDA(b->dice, 10), (void**)K, 6);
-	setGDIEfaces(getDA(b->dice, 11), (void**)L, 6);
-	setGDIEfaces(getDA(b->dice, 12), (void**)M, 6);
-	setGDIEfaces(getDA(b->dice, 13), (void**)N, 6);
-	setGDIEfaces(getDA(b->dice, 14),(void**)O, 6);
-	setGDIEfaces(getDA(b->dice, 15), (void**)P, 6);
+	setGDIEfaces(getDA(b->dice, 0), (void**)A, 16);
+	setGDIEfaces(getDA(b->dice, 1), (void**)B, 16);
+	setGDIEfaces(getDA(b->dice, 2), (void**)C, 16);
+	setGDIEfaces(getDA(b->dice, 3), (void**)D, 16);
+	setGDIEfaces(getDA(b->dice, 4), (void**)E, 16);
+	setGDIEfaces(getDA(b->dice, 5), (void**)F, 16);
+	setGDIEfaces(getDA(b->dice, 6),(void**)G, 16);
+	setGDIEfaces(getDA(b->dice, 7), (void**)H, 16);
+	setGDIEfaces(getDA(b->dice, 8), (void**)I, 16);
+	setGDIEfaces(getDA(b->dice, 9), (void**)J, 16);
+	setGDIEfaces(getDA(b->dice, 10), (void**)K, 16);
+	setGDIEfaces(getDA(b->dice, 11), (void**)L, 16);
+	setGDIEfaces(getDA(b->dice, 12), (void**)M, 16);
+	setGDIEfaces(getDA(b->dice, 13), (void**)N, 16);
+	setGDIEfaces(getDA(b->dice, 14),(void**)O, 16);
+	setGDIEfaces(getDA(b->dice, 15), (void**)P, 16);
 
 }
 

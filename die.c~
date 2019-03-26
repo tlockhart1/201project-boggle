@@ -63,7 +63,7 @@ extern void printGDIE(GDIE *dice, FILE *where){
 
 extern void showGDIE(void *dice, FILE *where){
 	GDIE *d = dice;
-	d->display(d->tossed, where);	
+	dice->display(d->tossed, where);	
 }
 
 extern void freeGDIE(void *dice){
