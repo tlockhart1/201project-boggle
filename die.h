@@ -14,3 +14,4 @@ extern void *rollGDIE(GDIE *);
 extern void printGDIE(GDIE *, FILE *);
 extern void showGDIE(void *, FILE *);
 extern void freeGDIE(void *);
+extern void *getGDIEtossed(GDIE *);

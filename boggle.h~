@@ -5,7 +5,7 @@ typedef struct boggle BOGG;
 
 extern BOGG *newBOGG(int, int, int);
 extern char getBOGGchar(BOGG *, int, int);
-extern void solveBOGG(BOGG *);
+extern void solveBOGG(BOGG *, int, int, char *);
 extern int scoreBOGGword(BOGG *, char *);
 extern void printBOGG(BOGG *);
 extern void displayBOGG(BOGG *, FILE *where);

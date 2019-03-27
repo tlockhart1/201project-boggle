@@ -33,12 +33,6 @@ extern GRID *newGRID(void (*d)(void *, FILE *), void (*f) (void *), int r, int c
 	return this_grid;
 }
 
-extern void fillGRIDrow(GRID *this_grid, void *items, int row){
-	if(row >= 0 && row <= this_grid->rows)
-		insertDAback(getDA(this_grid->guts, row), items);
-	else printf("col is outside bounds. - fillGRIDrow\n");
-}	
-
 extern void insertGRIDseq(GRID *this_grid, void *item){
 	if(this_grid->current_row == this_grid->rows){
 		printf("You're trying to go out of bounds. - insertGRID()\n");
@@ -50,6 +44,14 @@ extern void insertGRIDseq(GRID *this_grid, void *item){
 	       this_grid->current_col = 0;			//exceded bounds of columns
 	       this_grid->current_row++;			//therefore go to next row @ col index 0
 	}
+}
+
+extern int getGRIDcc(GRID *this_grid){		
+	return this_grid->current_col;
+}
+
+extern int getGRIDcr(GRID *this_grid){
+	return this_grid->current_row;	
 }
 
 extern void *getGRIDcell(GRID *this_grid, int r, int c){

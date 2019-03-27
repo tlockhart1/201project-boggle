@@ -7,8 +7,8 @@ test: taco
 	./test 
 valgrind: taco 
 	valgrind --leak-check=full ./test
-taco1: testgrid.o da.o grid.o player.o die.o boggle.o -lncurses -lm
-	$(CC) $(CFLAGS) testgrid.o da.o grid.o player.o die.o boggle.o -o testgrid -lncurses -lm
+taco1: testgrid.o da.o grid.o player.o die.o boggle.o stack.o dictionary.o rbt.o gst.o bst.o tnode.o queue.o cda.o fileio.o -lncurses -lm
+	$(CC) $(CFLAGS) testgrid.o da.o grid.o player.o die.o boggle.o stack.o dictionary.o rbt.o gst.o bst.o tnode.o queue.o cda.o fileio.o -o testgrid -lncurses -lm
 test1: taco1
 	./testgrid
 valgrind1: taco1
@@ -43,5 +43,7 @@ die.o: die.c die.h
 	$(CC) $(CFLAGS) -c die.c 
 boggle.o: boggle.c boggle.h
 	$(CC) $(CFLAGS) -c boggle.c
+stack.o: stack.c stack.h
+	$(CC) $(CFLAGS) -c stack.c
 clean: 
 	$(RM) *.exe *.o	main *~

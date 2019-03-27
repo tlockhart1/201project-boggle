@@ -19,6 +19,10 @@ extern GDIE *newGDIE(void){
 	return dice;
 }
 
+extern void *getGDIEtossed(GDIE *dice){
+	return dice->tossed;
+}
+
 extern void setGDIEfree(GDIE *dice, void (*f)(void *)){
 	setDAfree(dice->faces, f); 
 }
@@ -63,7 +67,7 @@ extern void printGDIE(GDIE *dice, FILE *where){
 
 extern void showGDIE(void *dice, FILE *where){
 	GDIE *d = dice;
-	dice->display(d->tossed, where);	
+	d->display(d->tossed, where);	
 }
 
 extern void freeGDIE(void *dice){

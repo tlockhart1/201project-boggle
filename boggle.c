@@ -4,7 +4,17 @@
 #include "da.h"
 #include "die.h"
 #include "player.h"
+#include "queue.h"
+#include "stack.h"
 #include "boggle.h"
+#include "dictionary.h"
+
+typedef struct cell {
+	int visit_flag;
+	int column_pos;
+	int row_pos;
+	void *value;
+} CELL;
 
 struct boggle{
 	GRID *guts;
@@ -12,26 +22,41 @@ struct boggle{
 	PLAYR *player2;		//human or ai(lul) 
 	DA *solve_list;
 	DA *dice;		//list of 16 standard Boggle dice
+	DICT *diction;
 	int seed;
 };
 
 static void populateDice(BOGG *b);
 static void setDicePlacement(BOGG *b);
 static void printDiceFace(void *, FILE *where);
+static void printCELL(void *cell, FILE *where);
+static void chooseNeighbor(STACK *s, BOGG *b, CELL *current);
 
 /*******************************************************************************************************/
 /* static void readPlayerLog(---); ---> this should be done via player.c i think. pass in log location */
 /*******************************************************************************************************/
 
+static CELL *newCELL(void *v, int r, int c){
+	CELL *cll = (CELL*)malloc(sizeof(CELL));
+	cll->column_pos = c;
+	cll->row_pos = r;
+	cll->visit_flag = 0;
+	cll->value = v;
+	return cll;
+}
+
 extern BOGG *newBOGG(int s, int r, int c){ 
 	BOGG *b = (BOGG*) malloc(sizeof(BOGG));	
 	b->seed = s;
 	srand(s);
-	b->guts = newGRID(showGDIE, NULL, r, c);
+	b->guts = newGRID(printCELL, NULL, r, c);
 	b->player1 = NULL;
 	b->player2 = NULL;
 	b->solve_list = newDA();
 	setDAfree(b->solve_list, free);	
+	FILE *file = fopen("words_alpha.txt", "r");
+	b->diction = newDictionary(file);
+	fclose(file);
 	
 	b->dice = newDA();
 	setDAfree(b->dice, freeGDIE);
@@ -44,9 +69,93 @@ extern BOGG *newBOGG(int s, int r, int c){
 
 	return b;
 }
+static void chooseNeighbor(STACK *s, BOGG *b, CELL *current){
+	CELL *e;
+	if(current->row_pos != 0){
+		e = getGRIDcell(b->guts, current->row_pos - 1, current->column_pos);
+		//if(e->visit_flag == 0)
+		push(s, e);
+	}
+	if(current->column_pos != 0){
+		e = getGRIDcell(b->guts, current->row_pos, current->column_pos - 1);
+		//if(e->visit_flag == 0)
+		push(s, e);
+	}
+	if(current->row_pos != getGRIDrows(b->guts)-1){
+		e = getGRIDcell(b->guts, current->row_pos + 1, current->column_pos);
+		//if(e->visit_flag == 0)
+		push(s, e);
+	}
+	if(current->column_pos != getGRIDcols(b->guts)-1){
+		e = getGRIDcell(b->guts, current->row_pos, current->column_pos + 1);
+		//if(e->visit_flag == 0)
+		push(s, e);
+	}
+	if((current->row_pos != 0) && (current->column_pos !=0)){
+		e = getGRIDcell(b->guts, current->row_pos -1, current->column_pos - 1);
+		//if(e->visit_flag == 0)
+		push(s, e);
+	}
+	if((current->row_pos != getGRIDrows(b->guts)-1) && (current->column_pos != getGRIDcols(b->guts)-1)){
+		e = getGRIDcell(b->guts, current->row_pos + 1, current->column_pos + 1);
+		//if(e->visit_flag == 0)
+		push(s, e);
+	}
+	if((current->row_pos != 0) && (current->column_pos != getGRIDcols(b->guts)-1)){
+		e = getGRIDcell(b->guts, current->row_pos - 1, current->column_pos + 1);
+		//if(e->visit_flag == 0)
+		push(s, e);
+	}
+	if((current->row_pos != getGRIDrows(b->guts)-1) && (current->column_pos != 0)){
+		e = getGRIDcell(b->guts, current->row_pos + 1, current->column_pos - 1);
+		//if(e->visit_flag == 0)
+		push(s, e);
+	}
+}
+
+/*extern void solveBOGG(BOGG *b, int r, int c, int not_visited){
+	char *word = (char*)malloc(getGRIDcols(b->guts)*getGRIDrows(b->guts));
+	int total_visited = 0;
+	STACK *im_dying = newSTACK();
+	CELL *current = getGRIDcell(b->guts, r, c);
+	push(im_dying, current);
+	while(sizeSTACK(im_dying) > 0){
+		current = pop(im_dying);
+		if(current->visit_flag == not_visited){
+			if(current->visit_flag == 1) current->visit_flag = 0;
+			else current->visit_flag = 1;
+			word[total_visited++] = ((char*)(current->value))[0];
+			chooseNeighbor(im_dying, b, current);
+			if(current->visit_flag == 1) current->visit_flag = 0;
+			else current->visit_flag = 1;
+		}
+	}
+	word[total_visited] = '\0';
+	printf("%s\n", word);
+
+}*/
+
+extern void solveBOGG(BOGG *b, int r, int c, char *word, int index){ //dunno gonna implement RBT next and see if it finds shit
+	//printf("hi\n");
+	CELL *current = getGRIDcell(b->guts, r, c);
+	current->visit_flag = 1;
+	word[index++] = ((char*)(current->value))[0];
+	word[index] = '\0';
+	if((index >= 3) && (getDICTword(b->diction, word)))
+		printf("%s\n", word);
+	for(int i = r-1; i<=r+1 && i<getGRIDrows(b->guts); i++){
+		for(int j = c-1; j<=c+1 && j<getGRIDcols(b->guts); j++){
+			if(i >= 0 && j >= 0 && ((CELL*)(getGRIDcell(b->guts, i, j)))->visit_flag == 0)
+				solveBOGG(b, i, j, word, index);
+		}
+	}
+	index--;
+	current->visit_flag = 0;
+}
 
 extern char getBOGGchar(BOGG *b, int r, int c){    	//make it so the characters in the GRID are unalterable
-	char *ptr = (char*)getGRIDcell(b->guts, r, c);
+	CELL *pptr = (CELL*)getGRIDcell(b->guts, r, c);
+	char *ptr = (char*)pptr->value;
 	if(ptr)
 		return ptr[0];
 	else {
@@ -58,10 +167,11 @@ extern char getBOGGchar(BOGG *b, int r, int c){    	//make it so the characters 
 static void setDicePlacement(BOGG *b){
 	int size = getGRIDrows(b->guts) * getGRIDcols(b->guts);
 	for (int i = 0; i < size; i++){
-		printf("hihi\n");
+		//printf("hihi\n");
 		GDIE *cancer = (GDIE*)removeDA(b->dice, rand() % (size-i));
 		rollGDIE(cancer);
-		insertGRIDseq(b->guts, cancer);
+		CELL *morecancer = newCELL(getGDIEtossed(cancer), getGRIDcr(b->guts), getGRIDcc(b->guts));
+		insertGRIDseq(b->guts, morecancer);
 	}
 }
 
@@ -110,6 +220,12 @@ static void populateDice(BOGG *b){
 
 extern void displayBOGG(BOGG *b, FILE *where){
 	printGRID(b->guts, where);
+}
+
+static void printCELL(void *cell, FILE *where){
+	CELL *c = (CELL*)cell;
+	char *a = (char*)c->value;
+	fprintf(where,"%c ", a[0]);
 }
 
 static void printDiceFace(void *c, FILE *where){
