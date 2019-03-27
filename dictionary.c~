@@ -75,7 +75,7 @@ extern void loadDICTprefixes(DICT *d, FILE *doc){
 	       	return;
 	}
 	while(ch != EOF){
-		if(isspace(ch)) string = getPrefix(doc);
+		if(isspace(ch)) string = getToken(doc);
 		else {
 			ungetc(ch, doc);
 			string = getPrefix(doc);

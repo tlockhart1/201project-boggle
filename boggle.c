@@ -8,6 +8,7 @@
 #include "stack.h"
 #include "boggle.h"
 #include "dictionary.h"
+#include <string.h>
 
 typedef struct cell {
 	int visit_flag;
@@ -23,6 +24,7 @@ struct boggle{
 	DA *solve_list;
 	DA *dice;		//list of 16 standard Boggle dice
 	DICT *diction;
+	DICT *prefixes;
 	int seed;
 };
 
@@ -55,8 +57,13 @@ extern BOGG *newBOGG(int s, int r, int c){
 	b->solve_list = newDA();
 	setDAfree(b->solve_list, free);	
 	FILE *file = fopen("words_alpha.txt", "r");
-	b->diction = newDictionary(file);
+	b->diction = newDictionary();
+	loadDICT(b->diction, file);
 	fclose(file);
+	FILE *file0 = fopen("words_alpha.txt", "r");
+	b->prefixes = newDictionary();
+	loadDICTprefixes(b->prefixes, file0);
+	fclose(file0);
 	
 	b->dice = newDA();
 	setDAfree(b->dice, freeGDIE);
@@ -69,80 +76,29 @@ extern BOGG *newBOGG(int s, int r, int c){
 
 	return b;
 }
-static void chooseNeighbor(STACK *s, BOGG *b, CELL *current){
-	CELL *e;
-	if(current->row_pos != 0){
-		e = getGRIDcell(b->guts, current->row_pos - 1, current->column_pos);
-		//if(e->visit_flag == 0)
-		push(s, e);
-	}
-	if(current->column_pos != 0){
-		e = getGRIDcell(b->guts, current->row_pos, current->column_pos - 1);
-		//if(e->visit_flag == 0)
-		push(s, e);
-	}
-	if(current->row_pos != getGRIDrows(b->guts)-1){
-		e = getGRIDcell(b->guts, current->row_pos + 1, current->column_pos);
-		//if(e->visit_flag == 0)
-		push(s, e);
-	}
-	if(current->column_pos != getGRIDcols(b->guts)-1){
-		e = getGRIDcell(b->guts, current->row_pos, current->column_pos + 1);
-		//if(e->visit_flag == 0)
-		push(s, e);
-	}
-	if((current->row_pos != 0) && (current->column_pos !=0)){
-		e = getGRIDcell(b->guts, current->row_pos -1, current->column_pos - 1);
-		//if(e->visit_flag == 0)
-		push(s, e);
-	}
-	if((current->row_pos != getGRIDrows(b->guts)-1) && (current->column_pos != getGRIDcols(b->guts)-1)){
-		e = getGRIDcell(b->guts, current->row_pos + 1, current->column_pos + 1);
-		//if(e->visit_flag == 0)
-		push(s, e);
-	}
-	if((current->row_pos != 0) && (current->column_pos != getGRIDcols(b->guts)-1)){
-		e = getGRIDcell(b->guts, current->row_pos - 1, current->column_pos + 1);
-		//if(e->visit_flag == 0)
-		push(s, e);
-	}
-	if((current->row_pos != getGRIDrows(b->guts)-1) && (current->column_pos != 0)){
-		e = getGRIDcell(b->guts, current->row_pos + 1, current->column_pos - 1);
-		//if(e->visit_flag == 0)
-		push(s, e);
-	}
-}
-
-/*extern void solveBOGG(BOGG *b, int r, int c, int not_visited){
-	char *word = (char*)malloc(getGRIDcols(b->guts)*getGRIDrows(b->guts));
-	int total_visited = 0;
-	STACK *im_dying = newSTACK();
-	CELL *current = getGRIDcell(b->guts, r, c);
-	push(im_dying, current);
-	while(sizeSTACK(im_dying) > 0){
-		current = pop(im_dying);
-		if(current->visit_flag == not_visited){
-			if(current->visit_flag == 1) current->visit_flag = 0;
-			else current->visit_flag = 1;
-			word[total_visited++] = ((char*)(current->value))[0];
-			chooseNeighbor(im_dying, b, current);
-			if(current->visit_flag == 1) current->visit_flag = 0;
-			else current->visit_flag = 1;
-		}
-	}
-	word[total_visited] = '\0';
-	printf("%s\n", word);
-
-}*/
 
 extern void solveBOGG(BOGG *b, int r, int c, char *word, int index){ //dunno gonna implement RBT next and see if it finds shit
 	//printf("hi\n");
+	//printf("%d - %d\n", sizeDICT(b->diction), sizeDICT(b->prefixes));
 	CELL *current = getGRIDcell(b->guts, r, c);
 	current->visit_flag = 1;
 	word[index++] = ((char*)(current->value))[0];
 	word[index] = '\0';
-	if((index >= 3) && (getDICTword(b->diction, word)))
-		printf("%s\n", word);
+	if((index >= 3) && (getDICTword(b->diction, word))){
+		char *found = malloc(index);
+		strcpy(found, word);
+		insertDAback(b->solve_list, found);
+		printf("%d\n", sizeDA(b->solve_list));
+		//printf("%s\n", word);
+	}
+	if(index == 3){
+		void *check = getDICTword(b->prefixes, word);	
+		if(!check){
+			index--;
+			current->visit_flag = 0;
+			return;
+		}
+	}
 	for(int i = r-1; i<=r+1 && i<getGRIDrows(b->guts); i++){
 		for(int j = c-1; j<=c+1 && j<getGRIDcols(b->guts); j++){
 			if(i >= 0 && j >= 0 && ((CELL*)(getGRIDcell(b->guts, i, j)))->visit_flag == 0)
