@@ -190,7 +190,7 @@ void getWords(DA *words, int player){
 	wrefresh(textbox);
 	wclear(textbox);
 	wrefresh(textbox);
-	printDefMessage("                                                              ", LINES-21, (COLS/2)-50); //clear prev message - not perminate hopefully
+	printDefMessage("                                                                                     ", LINES-21, (COLS/2)-50); //clear prev message - not perminate hopefully
 	parseNStore(c, words);
 	
 	cbreak();
