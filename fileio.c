@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <stdlib.h>
+#include <string.h>
+#include "da.h"
+
 /** partially ripped from lusth's scanner file **/
 static char *reallocateString(char *, size_t);
 
@@ -50,7 +53,7 @@ extern char *getPrefix(FILE *fp){
 			size *= 2;
 			string = reallocateString(string, size);
 		}
-		if(index <= 2)
+		if(index < 3)
 			string[index++] = ch;
 		ch = fgetc(fp);
 	}
@@ -67,6 +70,21 @@ extern char *getPrefix(FILE *fp){
 		return NULL;
 	}
 	return string;
+}
+
+extern void parseNStore(char *line, DA *words){
+	char *goddamnit = strtok(line, " ");
+	if(goddamnit)
+		insertDAback(words, goddamnit);
+	else return;
+
+	while(1){
+		char *store_dis = strtok(NULL, " ");
+		if(store_dis)
+			insertDAback(words, store_dis);
+		else
+			break;
+	}
 }
 
 static char *reallocateString(char *string, size_t size){		

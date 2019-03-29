@@ -8,6 +8,7 @@
 #include "stack.h"
 #include "boggle.h"
 #include "dictionary.h"
+#include "rbt.h"
 #include <string.h>
 
 typedef struct cell {
@@ -25,6 +26,7 @@ struct boggle{
 	DA *dice;		//list of 16 standard Boggle dice
 	DICT *diction;
 	DICT *prefixes;
+	RBT *dupes;
 	int seed;
 };
 
@@ -32,7 +34,7 @@ static void populateDice(BOGG *b);
 static void setDicePlacement(BOGG *b);
 static void printDiceFace(void *, FILE *where);
 static void printCELL(void *cell, FILE *where);
-static void chooseNeighbor(STACK *s, BOGG *b, CELL *current);
+static int comparator(void *A , void *B);
 
 /*******************************************************************************************************/
 /* static void readPlayerLog(---); ---> this should be done via player.c i think. pass in log location */
@@ -50,36 +52,44 @@ static CELL *newCELL(void *v, int r, int c){
 extern BOGG *newBOGG(int s, int r, int c){ 
 	BOGG *b = (BOGG*) malloc(sizeof(BOGG));	
 	b->seed = s;
+	b->dupes = newRBT(comparator);
 	srand(s);
 	b->guts = newGRID(printCELL, NULL, r, c);
 	b->player1 = NULL;
 	b->player2 = NULL;
 	b->solve_list = newDA();
 	setDAfree(b->solve_list, free);	
-	FILE *file = fopen("words_alpha.txt", "r");
 	b->diction = newDictionary();
-	loadDICT(b->diction, file);
-	fclose(file);
-	FILE *file0 = fopen("words_alpha.txt", "r");
 	b->prefixes = newDictionary();
-	loadDICTprefixes(b->prefixes, file0);
-	fclose(file0);
-	
 	b->dice = newDA();
 	setDAfree(b->dice, freeGDIE);
 	populateDice(b);
-
 	setDicePlacement(b);
-
-
-	
 
 	return b;
 }
 
+extern void loadBOGGdict(BOGG *b){
+	FILE *file = fopen("words_alpha.txt", "r");
+	loadDICT(b->diction, file);
+	fclose(file);
+	FILE *file0 = fopen("words_alpha.txt", "r");
+	loadDICTprefixes(b->prefixes, file0);
+	fclose(file0);
+}
+
+extern char *accessBOGGsolved(BOGG *b, int index){
+	if((sizeDA(b->solve_list) == 0) && (sizeDA(b->solve_list)-1 < index))
+		return NULL;
+	return getDA(b->solve_list, index);
+
+}
+
+extern int sizeBOGGsolved(BOGG *b){
+	return sizeDA(b->solve_list);
+}
+
 extern void solveBOGG(BOGG *b, int r, int c, char *word, int index){ //dunno gonna implement RBT next and see if it finds shit
-	//printf("hi\n");
-	//printf("%d - %d\n", sizeDICT(b->diction), sizeDICT(b->prefixes));
 	CELL *current = getGRIDcell(b->guts, r, c);
 	current->visit_flag = 1;
 	word[index++] = ((char*)(current->value))[0];
@@ -87,11 +97,12 @@ extern void solveBOGG(BOGG *b, int r, int c, char *word, int index){ //dunno gon
 	if((index >= 3) && (getDICTword(b->diction, word))){
 		char *found = malloc(index);
 		strcpy(found, word);
-		insertDAback(b->solve_list, found);
-		printf("%d\n", sizeDA(b->solve_list));
-		//printf("%s\n", word);
+		insertRBT(b->dupes, found);
+		//if(freqRBT(b->dupes, found) < 1){
+			insertDAback(b->solve_list, found);
+		//}
 	}
-	if(index <= 3){
+	if(index == 3){
 		void *check = getDICTword(b->prefixes, word);	
 		if(!check){
 			index--;
@@ -187,6 +198,12 @@ static void printCELL(void *cell, FILE *where){
 static void printDiceFace(void *c, FILE *where){
 	char *a = (char*)c;
 	fprintf(where, "%c ", a[0]);
+}
+
+static int comparator(void *A , void *B){
+	char *a = (char*)A;
+	char *b = (char*)B;
+	return strcmp(a, b);
 }
 
 

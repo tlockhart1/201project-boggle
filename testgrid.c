@@ -25,6 +25,7 @@ int main(){
 	freeGDIE(g);
 
 	BOGG *killme = newBOGG(1012, 4, 4);
+	loadBOGGdict(killme);
 	displayBOGG(killme, stdout);
 	char *word = malloc(10000);
 	for(int i = 0; i < 4; i++){
@@ -32,6 +33,11 @@ int main(){
 			solveBOGG(killme, i, j,word, 0);
 		}
 	}
+
+	for(int i = 0; i < sizeBOGGsolved(killme); i++){
+		printf("%s\n", accessBOGGsolved(killme, i));
+	}
+
 	return 0;
 }
 

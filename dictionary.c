@@ -68,6 +68,7 @@ extern void loadDICT(DICT *d, FILE *doc){
 extern void loadDICTprefixes(DICT *d, FILE *doc){
 	char *string = NULL; 
 	char ch;
+	//int k =0;
 
 	ch = fgetc(doc);
 	if(ch == EOF){
@@ -81,6 +82,7 @@ extern void loadDICTprefixes(DICT *d, FILE *doc){
 			string = getPrefix(doc);
 		}
 		if(string){
+			//printf("%d\n", ++k);
 		       insertDICTword(d, string);
 		}
 		string = NULL;

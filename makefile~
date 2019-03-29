@@ -1,14 +1,14 @@
 CC= gcc -std=c99
 CFLAGS= -no-pie -Wall -Wextra -g
 
-taco:	test.o da.o rbt.o dictionary.o fileio.o tnode.o bst.o gst.o cda.o queue.o -lncurses -lm
-	$(CC) $(CFLAGS) test.o da.o rbt.o dictionary.o fileio.o tnode.o bst.o gst.o cda.o queue.o -o test -lncurses -lm
+taco:	test.o da.o rbt.o dictionary.o fileio.o tnode.o bst.o gst.o cda.o queue.o boggle.o die.o -lncurses -lm
+	$(CC) $(CFLAGS) test.o da.o rbt.o dictionary.o fileio.o tnode.o bst.o gst.o cda.o queue.o boggle.o die.o -o test -lncurses -lm
 test: taco 
 	./test 
 valgrind: taco 
 	valgrind --leak-check=full ./test
-taco1: testgrid.o da.o grid.o player.o die.o boggle.o stack.o dictionary.o rbt.o gst.o bst.o tnode.o queue.o cda.o -lncurses -lm
-	$(CC) $(CFLAGS) testgrid.o da.o grid.o player.o die.o boggle.o stack.o dictionary.o rbt.o gst.o bst.o tnode.o queue.o cda.o -o testgrid -lncurses -lm
+taco1: testgrid.o da.o grid.o player.o die.o boggle.o stack.o dictionary.o rbt.o gst.o bst.o tnode.o queue.o cda.o fileio.o -lncurses -lm
+	$(CC) $(CFLAGS) testgrid.o da.o grid.o player.o die.o boggle.o stack.o dictionary.o rbt.o gst.o bst.o tnode.o queue.o cda.o fileio.o -o testgrid -lncurses -lm
 test1: taco1
 	./testgrid
 valgrind1: taco1
