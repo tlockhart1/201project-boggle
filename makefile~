@@ -1,8 +1,8 @@
 CC= gcc -std=c99
 CFLAGS= -no-pie -Wall -Wextra -g
 
-taco:	test.o da.o rbt.o dictionary.o fileio.o tnode.o bst.o gst.o cda.o queue.o boggle.o die.o -lncurses -lm
-	$(CC) $(CFLAGS) test.o da.o rbt.o dictionary.o fileio.o tnode.o bst.o gst.o cda.o queue.o boggle.o die.o -o test -lncurses -lm
+taco:	test.o da.o rbt.o dictionary.o fileio.o tnode.o bst.o gst.o cda.o queue.o boggle.o die.o grid.o -lncurses -lm
+	$(CC) $(CFLAGS) test.o da.o rbt.o dictionary.o fileio.o tnode.o bst.o gst.o cda.o queue.o boggle.o die.o grid.o -o test -lncurses -lm
 test: taco 
 	./test 
 valgrind: taco 

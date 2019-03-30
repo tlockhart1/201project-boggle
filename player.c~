@@ -17,7 +17,7 @@ extern PLAYR *newPLAYR(char *n){
 }
 
 extern char *getPLAYRname(PLAYR *p){
-	return p->name;
+	return name;
 }
 
 extern int getPLAYRwins(PLAYR *p){

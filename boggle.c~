@@ -26,7 +26,7 @@ struct boggle{
 	DA *dice;		//list of 16 standard Boggle dice
 	DICT *diction;
 	DICT *prefixes;
-	RBT *dupes;
+	RBT *search_list;
 	int seed;
 };
 
@@ -52,7 +52,7 @@ static CELL *newCELL(void *v, int r, int c){
 extern BOGG *newBOGG(int s, int r, int c){ 
 	BOGG *b = (BOGG*) malloc(sizeof(BOGG));	
 	b->seed = s;
-	b->dupes = newRBT(comparator);
+	b->search_list = newRBT(comparator);
 	srand(s);
 	b->guts = newGRID(printCELL, NULL, r, c);
 	b->player1 = NULL;
@@ -97,10 +97,10 @@ extern void solveBOGG(BOGG *b, int r, int c, char *word, int index){ //dunno gon
 	if((index >= 3) && (getDICTword(b->diction, word))){
 		char *found = malloc(index);
 		strcpy(found, word);
-		insertRBT(b->dupes, found);
-		//if(freqRBT(b->dupes, found) < 1){
+		if(freqRBT(b->search_list, found) == 0){
+			insertRBT(b->search_list, found);
 			insertDAback(b->solve_list, found);
-		//}
+		}
 	}
 	if(index == 3){
 		void *check = getDICTword(b->prefixes, word);	
@@ -204,6 +204,41 @@ static int comparator(void *A , void *B){
 	char *a = (char*)A;
 	char *b = (char*)B;
 	return strcmp(a, b);
+}
+
+extern int scoreBOGGwords(BOGG *b, DA *w){
+	RBT *dupes = newRBT(comparator);
+	int score = 0;
+	for(int i = 0; i < sizeDA(w); i++){
+		if(getDICTword(b->search_list, getDA(w, i))){
+			if(freqRBT(dupes, getDA(w, i)) == 0)
+				insertRBT(dupes, getDA(w, i));
+			else{
+				removeDA(w, i);
+				i--;
+			}
+		}
+		else{
+		       removeDA(w, i);
+		       i--;
+		}
+	}
+	for(int i = 0; i < sizeDA(w); i++){
+		int length = strlen(getDA(w, i));
+		if(length == 3)
+			score += 1;
+		else if(length == 4)
+			score += 2;
+		else if(length == 5)
+			score += 3;
+		else if(length == 6)
+			score += 4;
+		else if(length == 7)
+			score += 5;
+		else 
+			score += 6;
+	}
+	return score;
 }
 
 

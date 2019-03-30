@@ -12,5 +12,5 @@ extern int getGRIDcc(GRID *);
 extern int getGRIDcr(GRID *);
 extern int getGRIDrows(GRID *);
 extern int getGRIDcols(GRID *);
-extern void freeGRID(void *);
+extern void freeGRID(GRID *);
 

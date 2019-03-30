@@ -5,8 +5,10 @@
 #include "grid.h"
 #include "fileio.h"
 #include "time.h"
+#include "player.h"
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 WINDOW *create_newwin(int height, int width, int starty, int startx, char fill);
 WINDOW *create_textbox(int height, int width, int starty, int startx);
@@ -15,6 +17,14 @@ WINDOW *create_menu(int height, int width, int starty, int startx);
 WINDOW *userWords(DA *words, int index, int lines, int cols);
 void printDefMessage(char *, int lines, int width);
 void getWords(DA *, int player);
+void draw_board_win(BOGG *board, GRID *display, int rows, int cols, int startx, int starty, int height, int width);
+void destroy_board_win(GRID *display, int rows, int cols);
+void wordListTitle(char *, int, int);
+void printScore(DA *, BOGG *, int, int);
+PLAYR *getPlayerName(int);
+int getUsrCols();
+int getUsrRows();
+int checkNoInteger(char *);
 
 //char *wgetstr(WINDOW*);
 
@@ -22,17 +32,19 @@ void destroy_win(WINDOW *local_win);
 
 int main()
 {
-	WINDOW *my_win = NULL;
-	int columns = 4;
-	int rows = 4;
-
 	initscr();
 	cbreak();
 	noecho();
 
 	int mode = start_menu(); //initial choices
+	int rows = getUsrRows();
+	int columns = getUsrCols();
+	PLAYR *player1 = getPlayerName(1);
+	PLAYR *player2;
+	if(mode == 0)
+		player2 = getPlayerName(2);
 
-	BOGG *board = newBOGG(time(NULL), columns, rows);
+	BOGG *board = newBOGG(time(NULL), rows, columns);
 	loadBOGGdict(board);
 	char *s = malloc(6000);
 	for(int i = 0; i < rows; i++){
@@ -41,28 +53,17 @@ int main()
 		}
 	}
 
-	int startx, starty, width, height;
 	int ch;
 					
 	keypad(stdscr, TRUE);
 
-	height = 3;
-	width = 5;
-	starty = LINES/4;	/* Calculating for a center placement */
-	startx = (COLS/2)-(17/2);	/* of the window		*/
+	int height = 3;
+	int width = 5;
+	int starty = LINES/4;	/* Calculating for a center placement */
+	int startx = (COLS/2)-(17/2);	/* of the window		*/
+
 	printw("Press F1 to exit");
 	refresh();
-	int x = 0;
-	int y = 0;
-	GRID *g = newGRID(NULL, NULL, columns, rows);
-	for(int i = 0; i < 4; i++){
-		for(int j = 0; j < 4; j++){
-			insertGRIDseq(g, my_win = create_newwin(height, width, starty+y, startx+x, getBOGGchar(board, i, j)));
-			x += 4;
-		}
-		x = 0;
-		y += 2;
-	}
 
 	int usr_words_index = 0;
 	int usr_words_index2 = 0;
@@ -71,35 +72,31 @@ int main()
 	WINDOW *usr_words2 = NULL;
 	DA *wordsp1 = newDA();
 	DA *wordsp2 = NULL;
+	GRID *g = newGRID(NULL, NULL, rows, columns);
+	draw_board_win(board, g, rows, columns, startx, starty, height, width);
 
 	while((ch = getch()) != KEY_F(1))
 	{
 		
 		switch(ch)
-		{	/*case KEY_LEFT:
-				destroy_win(my_win);
-				my_win = create_newwin(height, width, starty,--startx);
-				break;
-			case KEY_RIGHT:
-				destroy_win(my_win);
-				my_win = create_newwin(height, width, starty,++startx);
-				break;
-			case KEY_UP:
-				destroy_win(my_win);
-				my_win = create_newwin(height, width, --starty,startx);
-				break;
-			case KEY_DOWN:
-				destroy_win(my_win);
-				my_win = create_newwin(height, width, ++starty,startx);
-				break;	*/
+		{	
 			case 'r':
 				getWords(wordsp1, 1);
+				destroy_board_win(g, rows, columns);
+				g = newGRID(NULL, NULL, rows, columns);
+				draw_board_win(board, g, rows, columns, startx, starty, height, width);
 				if(mode == 0){
 					wordsp2 = newDA();
 					getWords(wordsp2, 2);
+					printScore(wordsp2, board, LINES/4+12, COLS - COLS/4);
 					usr_words2 = userWords(wordsp2, 0, LINES/4, COLS - COLS/4);
+					wordListTitle("Player 2", (LINES/4)-1, COLS - COLS/4);
+					//printScore(wordsp2, board, LINES/4+12, COLS - COLS/4);
 				}
+				printScore(wordsp1, board, LINES/4+12, COLS/4);
 				usr_words = userWords(wordsp1, 0, LINES/4, COLS/4);
+				wordListTitle("Player 1", (LINES/4)-1, COLS/4);
+				//printScore(wordsp1, board, LINES/4+12, COLS/4);
 				if(mode == 1){
 					int difficulty = rand() % 25;
 					DA *copy = newDA();
@@ -114,8 +111,15 @@ int main()
 						insertDAback(wordsp2, removeDA(copy, rand() % sizeDA(copy)));	
 					}
 					freeDA(copy);
+					printScore(wordsp2, board, LINES/4+12, COLS - COLS/4);
 					usr_words2 = userWords(wordsp2, 0, LINES/4, COLS - COLS/4);
+					wordListTitle("Computer", (LINES/4)-1, COLS - COLS/4);
+					//printScore(wordsp2, board, LINES/4+12, COLS - COLS/4);
+
 				}
+				destroy_board_win(g, rows, columns);
+				g = newGRID(NULL, NULL, rows, columns);
+				draw_board_win(board, g, rows, columns, startx, starty, height, width);
 				break;
 			case 'u':
 				if(usr_words){
@@ -154,8 +158,113 @@ int main()
 		
 	}
 
+
+	destroy_board_win(g, rows, columns);
 	endwin();			/* End curses mode		  */
 	return 0;
+}
+
+void printScore(DA *words, BOGG *board, int lines, int width){
+	move(lines, width);
+	printw("SCORE: %d", scoreBOGGwords(board, words)); 
+	refresh();
+}
+
+PLAYR *getPlayerName(int which){
+	PLAYR *player;
+	nocbreak();
+	echo();
+	if(which == 1)
+		printDefMessage("Enter Player 1's name:", LINES-21, (COLS/2)-50);
+	else 
+		printDefMessage("Enter Player 2's name:", LINES-21, (COLS/2)-50);
+	WINDOW *textbox = create_textbox(2, 100, LINES-20, COLS/2-50);
+	char *c = malloc(1000);
+	wmove(textbox, 0, 0);
+	wgetstr(textbox, c); //clean preceding and following whitespace
+	wrefresh(textbox);
+	wclear(textbox);
+	wrefresh(textbox);
+	printDefMessage("                                                                                     ", LINES-21, (COLS/2)-50); //clear prev message - not perminate hopefully
+	destroy_win(textbox);
+	cbreak();
+	noecho();
+	player = newPLAYR(c);
+	return player;
+}
+
+int getUsrCols(){
+	nocbreak();
+	echo();
+	printDefMessage("Enter the number of columns for your board size:", LINES-21, (COLS/2)-50);
+	WINDOW *textbox = create_textbox(2, 100, LINES-20, COLS/2-50);
+	char *c = malloc(1000);
+	wmove(textbox, 0, 0);
+	wgetstr(textbox, c); //clean preceding and following whitespace
+	while(checkNoInteger(c) == 0){
+		wclear(textbox);
+		destroy_win(textbox);
+
+ 		/***clear prev message - not perminate hopefully***/
+		printDefMessage("                                                                                     ", LINES-21, (COLS/2)-50);
+
+		textbox = create_textbox(2, 100, LINES-20, COLS/2-50);
+		printDefMessage("Type DIGITS for the number of columns please:", LINES-21, (COLS/2)-50);
+		wmove(textbox, 0, 0);
+		wgetstr(textbox, c); //clean preceding and following whitespace
+
+	}
+	wrefresh(textbox);
+	wclear(textbox);
+	wrefresh(textbox);
+	printDefMessage("                                                                                     ", LINES-21, (COLS/2)-50); //clear prev message - not perminate hopefully
+	destroy_win(textbox);
+	cbreak();
+	noecho();
+	int columns = atoi(c);
+	free(c);
+	return columns;
+}
+
+int checkNoInteger(char *input){
+	for(int i = 0; input[i] != '\0'; i++){
+		if(isdigit(input[i]) == 0)
+			return 0;
+	}
+	return 1;
+}
+
+int getUsrRows(){
+	nocbreak();
+	echo();
+	printDefMessage("Enter the number of rows for your board size:", LINES-21, (COLS/2)-50);
+	WINDOW *textbox = create_textbox(2, 100, LINES-20, COLS/2-50);
+	char *c = malloc(1000);
+	wmove(textbox, 0, 0);
+	wgetstr(textbox, c); //clean preceding and following whitespace
+	while(checkNoInteger(c) == 0){
+		wclear(textbox);
+		destroy_win(textbox);
+
+ 		/***clear prev message - not perminate hopefully***/
+		printDefMessage("                                                                                     ", LINES-21, (COLS/2)-50);
+
+		textbox = create_textbox(2, 100, LINES-20, COLS/2-50);
+		printDefMessage("Type DIGITS for the number of rows please:", LINES-21, (COLS/2)-50);
+		wmove(textbox, 0, 0);
+		wgetstr(textbox, c); //clean preceding and following whitespace
+
+	}
+	wrefresh(textbox);
+	wclear(textbox);
+	wrefresh(textbox);
+	printDefMessage("                                                                                     ", LINES-21, (COLS/2)-50); //clear prev message - not perminate hopefully
+	destroy_win(textbox);
+	cbreak();
+	noecho();
+	int rows = atoi(c);
+	free(c);
+	return rows;
 }
 
 WINDOW *userWords(DA *words, int index, int lines, int cols){
@@ -187,19 +296,50 @@ void getWords(DA *words, int player){
 
 	wmove(textbox, 0, 0);
 	wgetstr(textbox, c); //clean preceding and following whitespace
-	wrefresh(textbox);
+	//wrefresh(textbox);
 	wclear(textbox);
 	wrefresh(textbox);
-	printDefMessage("                                                              ", LINES-21, (COLS/2)-50); //clear prev message - not perminate hopefully
+	printDefMessage("                                                                                     ", LINES-21, (COLS/2)-50); //clear prev message - not perminate hopefully
 	parseNStore(c, words);
-	
+	wclear(textbox);
+	destroy_win(textbox);
 	cbreak();
 	noecho();
+}
+
+void draw_board_win(BOGG *board, GRID *display, int rows, int cols, int startx, int starty, int height, int width){
+	int x = 0;	
+	int y = 0;
+	WINDOW *my_win;
+	for(int i = 0; i < rows; i++){
+		for(int j = 0; j < cols; j++){
+			insertGRIDseq(display, my_win = create_newwin(height, width, starty+y, startx+x, getBOGGchar(board, i, j)));
+			x += 4;
+		}
+		x = 0;
+		y += 2;
+	}
+}
+
+void destroy_board_win(GRID *display, int rows, int cols){
+	for(int i = 0; i < rows; i++){
+		for(int j = 0; j < cols; j++){
+			destroy_win((WINDOW*)getGRIDcell(display, i, j));
+		}
+	}	
+	freeGRID(display);
+	display = NULL;
 }
 
 void printDefMessage(char *msg, int lines, int width){
 	move(lines, width);
 	printw("%s", msg); 
+	refresh();
+}
+
+void wordListTitle(char *msg, int lines, int width){
+	move(lines, width);
+	printw("***-%s's (valid) Words-***", msg); 
 	refresh();
 }
 
