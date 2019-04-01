@@ -9,7 +9,9 @@
 #include "boggle.h"
 #include "dictionary.h"
 #include "rbt.h"
+#include "trie.h"
 #include <string.h>
+#include <ctype.h>
 
 typedef struct cell {
 	int visit_flag;
@@ -20,12 +22,9 @@ typedef struct cell {
 
 struct boggle{
 	GRID *guts;
-	PLAYR *player1;		//always human
-	PLAYR *player2;		//human or ai(lul) 
 	DA *solve_list;
 	DA *dice;		//list of 16 standard Boggle dice
 	DICT *diction;
-	DICT *prefixes;
 	RBT *search_list;
 	int seed;
 };
@@ -55,12 +54,9 @@ extern BOGG *newBOGG(int s, int r, int c){
 	b->search_list = newRBT(comparator);
 	srand(s);
 	b->guts = newGRID(printCELL, NULL, r, c);
-	b->player1 = NULL;
-	b->player2 = NULL;
 	b->solve_list = newDA();
 	setDAfree(b->solve_list, free);	
 	b->diction = newDictionary();
-	b->prefixes = newDictionary();
 	b->dice = newDA();
 	setDAfree(b->dice, freeGDIE);
 	populateDice(b);
@@ -70,12 +66,9 @@ extern BOGG *newBOGG(int s, int r, int c){
 }
 
 extern void loadBOGGdict(BOGG *b){
-	FILE *file = fopen("words_alpha.txt", "r");
+	FILE *file = fopen("words.txt", "r");
 	loadDICT(b->diction, file);
 	fclose(file);
-	FILE *file0 = fopen("words_alpha.txt", "r");
-	loadDICTprefixes(b->prefixes, file0);
-	fclose(file0);
 }
 
 extern char *accessBOGGsolved(BOGG *b, int index){
@@ -92,29 +85,35 @@ extern int sizeBOGGsolved(BOGG *b){
 extern void solveBOGG(BOGG *b, int r, int c, char *word, int index){ //dunno gonna implement RBT next and see if it finds shit
 	CELL *current = getGRIDcell(b->guts, r, c);
 	current->visit_flag = 1;
-	word[index++] = ((char*)(current->value))[0];
+	word[index++] = tolower(((char*)(current->value))[0]);
+	if(word[index-1] == 'q')
+		word[index++] = 'u';
 	word[index] = '\0';
-	if((index >= 3) && (getDICTword(b->diction, word))){
-		char *found = malloc(index);
-		strcpy(found, word);
-		if(freqRBT(b->search_list, found) == 0){
-			insertRBT(b->search_list, found);
-			insertDAback(b->solve_list, found);
+	int check = 0;
+	if(index >= 3){
+		check = getDICTword(b->diction, word);
+		if(check == 1){
+			char *found = malloc(100);
+			strcpy(found, word);
+			if(freqRBT(b->search_list, found) == 0){
+				insertRBT(b->search_list, found);
+				insertDAback(b->solve_list, found);
+				//printf("%s\n", word);
+			}
+		}
+
+	}
+	if(getDICTprefix(b->diction, word) == 1){
+		for(int i = r - 1; (i <= r + 1) && (i < getGRIDrows(b->guts)); i++){
+			for(int j = c - 1; j <= c + 1 && j < getGRIDcols(b->guts); j++){
+				if(i >= 0 && j >= 0 && ((CELL*)(getGRIDcell(b->guts, i, j)))->visit_flag == 0)
+					solveBOGG(b, i, j, word, index);
+			}
 		}
 	}
-	if(index == 3){
-		void *check = getDICTword(b->prefixes, word);	
-		if(!check){
+	if(index > 1){
+		if(word[index-1] == 'u' && word[index-2] == 'q')
 			index--;
-			current->visit_flag = 0;
-			return;
-		}
-	}
-	for(int i = r-1; i<=r+1 && i<getGRIDrows(b->guts); i++){
-		for(int j = c-1; j<=c+1 && j<getGRIDcols(b->guts); j++){
-			if(i >= 0 && j >= 0 && ((CELL*)(getGRIDcell(b->guts, i, j)))->visit_flag == 0)
-				solveBOGG(b, i, j, word, index);
-		}
 	}
 	index--;
 	current->visit_flag = 0;
@@ -131,11 +130,21 @@ extern char getBOGGchar(BOGG *b, int r, int c){    	//make it so the characters 
 	}
 }
 
+extern DA *getBOGGsolved(BOGG *b){
+	return b->solve_list;
+}
+
 static void setDicePlacement(BOGG *b){
 	int size = getGRIDrows(b->guts) * getGRIDcols(b->guts);
+	DA *kill_me_haha = newDA();
 	for (int i = 0; i < size; i++){
-		//printf("hihi\n");
-		GDIE *cancer = (GDIE*)removeDA(b->dice, rand() % (size-i));
+		if(sizeDA(b->dice) == 0){
+			freeDA(b->dice);
+			b->dice = kill_me_haha;
+			kill_me_haha = newDA();
+		}
+		GDIE *cancer = (GDIE*)removeDA(b->dice, rand() % (sizeDA(b->dice)));
+		insertDAback(kill_me_haha, cancer);
 		rollGDIE(cancer);
 		CELL *morecancer = newCELL(getGDIEtossed(cancer), getGRIDcr(b->guts), getGRIDcc(b->guts));
 		insertGRIDseq(b->guts, morecancer);
@@ -192,7 +201,7 @@ extern void displayBOGG(BOGG *b, FILE *where){
 static void printCELL(void *cell, FILE *where){
 	CELL *c = (CELL*)cell;
 	char *a = (char*)c->value;
-	fprintf(where,"%c ", a[0]);
+	fprintf(where,"%c,%d,%d ", a[0], c->row_pos, c->column_pos);
 }
 
 static void printDiceFace(void *c, FILE *where){
@@ -239,6 +248,14 @@ extern int scoreBOGGwords(BOGG *b, DA *w){
 			score += 6;
 	}
 	return score;
+}
+
+extern int getBOGGcols(BOGG *b){
+	return getGRIDcols(b->guts);
+}
+
+extern int getBOGGrows(BOGG *b){
+	return getGRIDrows(b->guts);
 }
 
 

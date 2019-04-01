@@ -1,44 +1,48 @@
 #include "rbt.h"
 #include "dictionary.h"
 #include "fileio.h"
+#include "trie.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 
 struct dictionary {
-	RBT *tree;
+	Trie *tree;
 };
 
-static int compareWords(void *, void *);
+//static int compareWords(void *, void *);
 
 extern DICT *newDictionary(){
 	DICT *d = malloc(sizeof(DICT));
-	d->tree = newRBT(compareWords);
+	d->tree = getNewTrieNode();
 	//if(doc) loadDICT(d, doc);
 	return d;
 }
 
-extern int insertDICTword(DICT *d, void *data){
-	if(insertRBT(d->tree, data)) return 1;
-	return 0;
+extern void insertDICTword(DICT *d, void *data){
+	insert(&d->tree, data);
 }
 
 extern int deleteDICTword(DICT *d, void *data){
-	return deleteRBT(d->tree, data);
+	return deletion(&d->tree, data);
 }
 
-extern int sizeDICT(DICT *d){
+/*extern int sizeDICT(DICT *d){
 	return sizeRBT(d->tree);
+}*/
+
+extern int getDICTword(DICT *d, void *data){
+	return search(d->tree, data);
 }
 
-extern void *getDICTword(DICT *d, void *data){
-	return findRBT(d->tree, data);
+extern int getDICTprefix(DICT *d, void *data){
+	return searchPrefix(d->tree, data);
 }
 
-static int compareWords(void *a, void *b){
+/*static int compareWords(void *a, void *b){
 	return strcmp(a, b);
-}
+}*/
 
 extern void loadDICT(DICT *d, FILE *doc){
 	char *string = NULL; 
