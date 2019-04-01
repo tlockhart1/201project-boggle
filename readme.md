@@ -6,6 +6,12 @@
 
 - https://alabama.box.com/s/3i5mxp97q15l7gntivnj8h2c2dkzn5np
 
+***GITHUB***
+
+- https://github.com/tlockhart1/201project-boggle.git
+
+***DIRECTIONS**
+
 - dictionary setup-
 	-login as admin with 'sudo -i' command
 	-navigate to /usr/share/dict/
